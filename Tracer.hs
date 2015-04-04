@@ -21,7 +21,7 @@ msaa4    = msaa [(0.125,0.375),(0.375,-0.125),(-0.125,-0.375),(-0.375,0.125)] --
 -- render a scene
 render :: View -> Projection -> Multisampler -> Scene -> Width -> Height -> Int -> [Colour]
 render view projection ms scene@(Scene _ _ airn _ _) width height maxdepth =
-  parMap rdeepseq (combine . map projAndTrace . (ms vup vright)) viewPlane
+  parMap rdeepseq (combine . map projAndTrace . (ms vright vup)) viewPlane
   where
     (viewPlane,vright,vup) = makeViewPlane view width height
     projAndTrace           = trace maxdepth scene airn . projection view
