@@ -5,18 +5,7 @@ import Control.Parallel.Strategies
 
 import Math
 import Scene
-
--- multisampling transformer
--- vright -> vup -> pt -> [pts]
-type Multisampler = Vec3 -> Vec3 -> Point -> [Point]
-
--- supersample point offsets
-msaa :: [(Double,Double)] -> Multisampler
-msaa offsets vright vup p = [p + (x|*vright) + (y|*vup) | (x,y) <- offsets]
-
-noaa, msaa4 :: Multisampler
-noaa _ _ = pure
-msaa4    = msaa [(0.125,0.375),(0.375,-0.125),(-0.125,-0.375),(-0.375,0.125)] -- rotated grid pattern
+import Multisampler (Multisampler)
 
 -- render a scene
 render :: View -> Projection -> Multisampler -> Scene -> Width -> Height -> Int -> [Colour]

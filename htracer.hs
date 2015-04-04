@@ -3,6 +3,7 @@ import Scene
 import Surfaces.Sphere as S
 import Surfaces.Plane as P
 import Lights
+import Multisampler
 import Math
 
 
