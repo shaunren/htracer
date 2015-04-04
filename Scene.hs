@@ -66,7 +66,7 @@ intersectAny :: [SurfaceW] -> Ray -> Bool
 intersectAny [] _ = False
 intersectAny ((SW s):ss) ray = case (intersect s ray) of
   Nothing -> intersectAny ss ray
-  Just t  -> if t>0.000001 then True else intersectAny ss ray -- the ray might intersect itself
+  Just t  -> if t>epsilon then True else intersectAny ss ray
 
 -- closest intersection of a ray to a surface
 closestIntersection :: [SurfaceW] -> Ray -> Maybe (Double, SurfaceW)

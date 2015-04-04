@@ -56,7 +56,7 @@ trace depth scene@(Scene bg ambient airn ls ss) rn ray@(Ray o d) =
             transv    = nrat|*d - (signum nd) * (nrat*cosin - sqrt (1-sintrans2)) |* n
             transk    = (1-fr) |* beerk * ((idv 1) - ks) * kt
             transmitc = if norm transk > 0.002
-                        then transk * trace (depth-1) scene n2 (Ray (pt+0.00001|*transv) transv)
+                        then transk * trace (depth-1) scene n2 (Ray pt transv)
                         else black
 
              -- diffuse & specular; don't calculate if in surface
