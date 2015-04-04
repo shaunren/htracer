@@ -3,7 +3,7 @@ module Math where
 import Control.DeepSeq
 
 epsilon :: Double
-epsilon = 0.000001
+epsilon = 0.0000001
 
 -----------------------------------------------------------------------------------------------------
 -- A 3D vector

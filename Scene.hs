@@ -14,6 +14,7 @@ clamp :: Colour -> Colour
 clamp = vmap (min 1)
 
 -- add colour
+infixl 6 <+>
 (<+>) :: Colour -> Colour -> Colour
 a <+> b = clamp (a+b)
 
