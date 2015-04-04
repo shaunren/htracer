@@ -42,10 +42,11 @@ data Material = Material { emission      :: Colour
                          , shininess     :: Word8
                          , transmissionK :: Colour
                          , diaelectric   :: Bool
-                         , refractiveInd :: Double }
+                         , refractiveInd :: Double
+                         , absorption    :: Colour }
               deriving (Eq, Show)
 
-makeMaterial :: Colour -> Colour -> Double -> Double -> Double -> Word8 -> Colour -> Bool -> Double -> Material
+makeMaterial :: Colour -> Colour -> Double -> Double -> Double -> Word8 -> Colour -> Bool -> Double -> Colour -> Material
 makeMaterial e c ka kd ks = Material e (ka|*c) (kd|*c) (ks|*c)
 
 class Surface s where
@@ -65,7 +66,7 @@ intersectAny :: [SurfaceW] -> Ray -> Bool
 intersectAny [] _ = False
 intersectAny ((SW s):ss) ray = case (intersect s ray) of
   Nothing -> intersectAny ss ray
-  Just t  -> if t>0.0001 then True else intersectAny ss ray -- the ray might intersect itself
+  Just t  -> if t>0.000001 then True else intersectAny ss ray -- the ray might intersect itself
 
 -- closest intersection of a ray to a surface
 closestIntersection :: [SurfaceW] -> Ray -> Maybe (Double, SurfaceW)
@@ -109,26 +110,32 @@ data Scene = Scene { bgColour      :: Colour
                    , surfaces      :: [SurfaceW] }
 
 data View = View { cameraPos  :: Vec3
-                 , viewDist   :: Double
                  , lookingAt  :: Vec3
                  , upVector   :: Vec3
+                 , hFov       :: Double -- horizontal FOV in degrees
                  } deriving (Eq, Show)
 
 type Width = Int
 type Height = Int
 
-makeViewPlane :: View -> Width -> Height -> [Point]
-makeViewPlane (View cpos dist viewdir up) w h =
-  [  center
-   + ((0.5+(fromIntegral x)-width/2)  |* vright)
-   + ((0.5+(fromIntegral y)-height/2) |* vup)    | y <- [h-1,h-2..0], x <- [0..w-1] ]
+-- evaluates to a list of points, vright, vup
+makeViewPlane :: View -> Width -> Height -> ([Point],Vec3,Vec3)
+makeViewPlane (View cpos lookat up hfov) w h =
+  ([  lookat
+   + ((0.5+(fromIntegral x)-hwidth)  |* vright)
+   + ((0.5+(fromIntegral y)-hheight) |* vup)    | y <- [h-1,h-2..0], x <- [0..w-1] ]
+   , vright
+   , vup)
   
-  where width  = fromIntegral w
-        height = fromIntegral h
-        vdir   = normalize (viewdir-cpos)
-        vup    = normalize up
-        vright = vdir |*| vup
-        center = cpos + dist |* vdir
+  where hwidth  = (fromIntegral w)/2  -- half width and half height
+        hheight = (fromIntegral h)/2
+        vd      = lookat-cpos
+        dist    = norm vd
+        vdir    = 1/dist |* vd
+        unitd   = dist * tan (hfov*pi/360) / hwidth
+        vup'    = normalize up
+        vright  = unitd |* vdir |*| vup'
+        vup     = unitd |* vup'
         
 
 type Projection = View -> Point -> Ray

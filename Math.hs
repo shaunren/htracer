@@ -50,6 +50,10 @@ infixl 7 |*|
 (|*|) :: Vec3 -> Vec3 -> Vec3
 (Vec3 x y z) |*| (Vec3 x' y' z') = Vec3 (y*z'-y'*z) (x'*z-x*z') (x*y'-x'*y)
 
+-- component-wise exp
+infixr 8 |**|
+(|**|) :: Vec3 -> Double -> Vec3
+(Vec3 x y z) |**| e = Vec3 (x**e) (y**e) (z**e)
 
 -- vector norm
 norm :: Vec3 -> Double

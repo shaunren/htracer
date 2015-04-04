@@ -7,12 +7,12 @@ import Math
 import Scene
 
 -- multisampling transformer
--- vup -> vright -> pt -> [pts]
+-- vright -> vup -> pt -> [pts]
 type Multisampler = Vec3 -> Vec3 -> Point -> [Point]
 
 -- supersample point offsets
 msaa :: [(Double,Double)] -> Multisampler
-msaa offsets vup vright p = [p + (x|*vright) + (y|*vup) | (x,y) <- offsets]
+msaa offsets vright vup p = [p + (x|*vright) + (y|*vup) | (x,y) <- offsets]
 
 noaa, msaa4 :: Multisampler
 noaa _ _ = pure
@@ -20,14 +20,12 @@ msaa4    = msaa [(0.125,0.375),(0.375,-0.125),(-0.125,-0.375),(-0.375,0.125)] --
 
 -- render a scene
 render :: View -> Projection -> Multisampler -> Scene -> Width -> Height -> Int -> [Colour]
-render view@(View cpos _ viewdir up) projection ms scene@(Scene _ _ airn _ _) width height maxdepth =
-  parMap rdeepseq (combine . map projAndTrace . (ms vup vright)) $ makeViewPlane view width height
+render view projection ms scene@(Scene _ _ airn _ _) width height maxdepth =
+  parMap rdeepseq (combine . map projAndTrace . (ms vup vright)) viewPlane
   where
-    vdir         = normalize (viewdir-cpos)
-    vup          = normalize up
-    vright       = vdir |*| vup
-    projAndTrace = trace maxdepth scene airn . projection view
-    combine cs   = clamp $ 1/l |* sum cs
+    (viewPlane,vright,vup) = makeViewPlane view width height
+    projAndTrace           = trace maxdepth scene airn . projection view
+    combine cs             = clamp $ 1/l |* sum cs
       where l = fromIntegral $ length cs
 
 -- trace a single ray
@@ -39,22 +37,25 @@ trace depth scene@(Scene bg ambient airn ls ss) rn ray@(Ray o d) =
     Just (t, SW s) -> ke <+> ka*ambient <+> lightc <+> reflectc <+> transmitc
       where pt = (o + d*|t)
             n  = getNormal s pt
-            mat@(Material ke ka _ ks _ kt diaelec matn) = getMaterial s pt
+            mat@(Material ke ka _ ks _ kt diaelec matn absorbe) = getMaterial s pt
 
             -- calculate reflection and transmission (refraction)
             nd    = n |.| d
             n2    = if nd<=0 then matn else airn
             cosin = abs nd
             (fr, sintrans2) = if diaelec then fresnelReflectance rn n2 cosin else (1,0)
+
+            beerk    = if nd>0 then absorbe|**|t else 1       -- Beer's law
             
-            reflectc = if   fr * norm ks > 0.003
-                       then fr |* ks * trace (depth-1) scene rn (Ray pt $ reflection d n)
+            reflectk = fr |* beerk * ks
+            reflectc = if   norm reflectk > 0.002
+                       then reflectk * trace (depth-1) scene rn (Ray pt $ reflection d n)
                        else black
                             
             nrat      = rn/n2
             transv    = nrat|*d - (signum nd) * (nrat*cosin - sqrt (1-sintrans2)) |* n
-            transk    = (1-fr) |* ((idv 1) - ks) * kt
-            transmitc = if norm transk > 0.003
+            transk    = (1-fr) |* beerk * ((idv 1) - ks) * kt
+            transmitc = if norm transk > 0.002
                         then transk * trace (depth-1) scene n2 (Ray (pt+0.00001|*transv) transv)
                         else black
 

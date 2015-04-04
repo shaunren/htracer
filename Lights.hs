@@ -9,7 +9,7 @@ import Scene
 -- l: vector from point to light
 -- n: normal at point
 phongIllum :: Vec3 -> Vec3 -> Vec3 -> Colour -> Colour -> Material -> Colour
-phongIllum v l n cdiffuse cspecular (Material _ _ kd ks sh _ _ _) =
+phongIllum v l n cdiffuse cspecular (Material _ _ kd ks sh _ _ _ _) =
       ((kd * cdiffuse)  *| max (n |.| l) 0)
   <+> ((ks * cspecular) *| (max (r |.| v) 0)^sh)
   where r = reflection (negate l) n
