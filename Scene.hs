@@ -42,16 +42,16 @@ data Material = Material { emission      :: Colour
                          , shininess     :: Word8
                          , transmissionK :: Colour
                          , diaelectric   :: Bool
-                         , refractiveInd :: Double
+                         , refractiveInd :: Scalar
                          , absorption    :: Colour }
               deriving (Eq, Show)
 
-makeMaterial :: Colour -> Colour -> Double -> Double -> Double -> Word8 -> Colour -> Bool -> Double -> Colour -> Material
+makeMaterial :: Colour -> Colour -> Scalar -> Scalar -> Scalar -> Word8 -> Colour -> Bool -> Scalar -> Colour -> Material
 makeMaterial e c ka kd ks = Material e (ka|*c) (kd|*c) (ks|*c)
 
 class Surface s where
   -- get closest intersection point (o+dt) such that d>0, if there is any
-  intersect :: s -> Ray -> Maybe Double
+  intersect :: s -> Ray -> Maybe Scalar
   -- compute unit normal at point
   getNormal :: s -> Point -> Normal
   -- get material at point
@@ -69,7 +69,7 @@ intersectAny ((SW s):ss) ray = case (intersect s ray) of
   Just t  -> if t>epsilon then True else intersectAny ss ray
 
 -- closest intersection of a ray to a surface
-closestIntersection :: [SurfaceW] -> Ray -> Maybe (Double, SurfaceW)
+closestIntersection :: [SurfaceW] -> Ray -> Maybe (Scalar, SurfaceW)
 closestIntersection ss ray = foldl' f Nothing ss
   where f a sw@(SW s)  = maybe a (g sw a) $ intersect s ray
         g sw Nothing t = Just (t,sw)
@@ -79,7 +79,7 @@ closestIntersection ss ray = foldl' f Nothing ss
                         
 
 -- a UV map, where (u,v) in [0,1]^2
-type UVMap = Double -> Double -> Material
+type UVMap = Scalar -> Scalar -> Material
 
 -- a const uvmap
 constUVMap :: Material -> UVMap
@@ -91,7 +91,7 @@ type Light = [SurfaceW] -> Material -> Vec3 -> Point -> Normal -> Colour
 -- Fresnel reflectance, Schlick's approximation
 -- 0 <= cosInAngle <= 1
 -- evaluates to (R(\theta_i), sin^2(\theta_t))
-fresnelReflectance :: Double -> Double -> Double -> (Double,Double)
+fresnelReflectance :: Scalar -> Scalar -> Scalar -> (Scalar,Scalar)
 fresnelReflectance n1 n2 cosInAngle 
   | n1 <= n2                      = (r + (1-r)*((1-cosInAngle)^5), sinTransAngleSq)
   | cosInAngleSq > cosCritAngleSq = (r + (1-r)*((1-sqrt cosTransAngleSq)^5), sinTransAngleSq)
@@ -105,14 +105,14 @@ fresnelReflectance n1 n2 cosInAngle
 --
 data Scene = Scene { bgColour      :: Colour
                    , ambientColour :: Colour
-                   , airRefractInd :: Double
+                   , airRefractInd :: Scalar
                    , lights        :: [Light]
                    , surfaces      :: [SurfaceW] }
 
 data View = View { cameraPos  :: Vec3
                  , lookingAt  :: Vec3
                  , upVector   :: Vec3
-                 , hFov       :: Double -- horizontal FOV in degrees
+                 , hFov       :: Scalar -- horizontal FOV in degrees
                  } deriving (Eq, Show)
 
 type Width = Int

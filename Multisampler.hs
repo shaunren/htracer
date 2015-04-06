@@ -9,11 +9,11 @@ import Control.Arrow
 type Multisampler = Vec3 -> Vec3 -> Point -> [Point]
 
 -- supersample point offsets
-msaa :: [(Double,Double)] -> Multisampler
+msaa :: [(Scalar,Scalar)] -> Multisampler
 msaa offsets vright vup p = [p + (x|*vright) + (y|*vup) | (x,y) <- offsets]
 
 -- standard MSAA patterns
-stdMsaa :: [(Double,Double)] -> Multisampler
+stdMsaa :: [(Scalar,Scalar)] -> Multisampler
 stdMsaa = msaa . (((/16) *** (/16)) <$>)
 
 noaa, msaa2, msaa4, msaa8, msaa16 :: Multisampler

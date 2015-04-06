@@ -7,7 +7,7 @@ import Scene
 
 -- Sphere
 data Sphere = Sphere { center      :: Point
-                     , radius      :: Double
+                     , radius      :: Scalar
                      , textureMap  :: UVMap
                      }
 

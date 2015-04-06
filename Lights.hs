@@ -15,7 +15,7 @@ phongIllum v l n cdiffuse cspecular (Material _ _ kd ks sh _ _ _ _) =
   where r = reflection (negate l) n
 
 -- light attenuation factor
-attenuation :: Double -> Word8 -> Double -> Double
+attenuation :: Scalar -> Word8 -> Scalar -> Scalar
 attenuation fadeDist fadePower d = if fadePower < 1 then 1 else 2/(1 + (d/fadeDist)^fadePower)
 
 
@@ -28,7 +28,7 @@ parallelLight shadow ldir lcolour ss mat v pt n
   where ld = negate $ normalize ldir
 
 -- point light source (e.g. light bulb)
-pointLight :: Bool -> Double -> Word8 -> Point -> Colour -> Light
+pointLight :: Bool -> Scalar -> Word8 -> Point -> Colour -> Light
 pointLight shadow fadeDist fadePower lpos lcolour ss mat v pt n
   | d<epsilon || (shadow && intersectAny ss (Ray pt ld)) = black
   | otherwise = phongIllum v ld n lc lc mat

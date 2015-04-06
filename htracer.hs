@@ -7,7 +7,7 @@ import Multisampler
 import Math
 
 
-checkedMatUV :: Double -> UVMap
+checkedMatUV :: Scalar -> UVMap
 checkedMatUV scale u v
   | (odd . truncate $ u*scale) == (odd . truncate $ v*scale) = makeMaterial emission white 0.2 0.8 0.6 6 zerov False 1 zerov
   | otherwise                                                = makeMaterial emission black 0.2 0.8 0 3 zerov False 1 zerov
@@ -69,7 +69,7 @@ height   = 768
 maxdepth = 16
 
 multisampler :: Multisampler
-multisampler = msaa4
+multisampler = msaa8
 
 main :: IO ()
 main = do

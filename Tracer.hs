@@ -18,7 +18,7 @@ render view projection ms scene@(Scene _ _ airn _ _) width height maxdepth =
       where l = fromIntegral $ length cs
 
 -- trace a single ray
-trace :: Int -> Scene -> Double -> Ray -> Colour
+trace :: Int -> Scene -> Scalar -> Ray -> Colour
 trace depth _ _ _ | depth < 0  = black     -- maximum recursion depth reached
 trace depth scene@(Scene bg ambient airn ls ss) rn ray@(Ray o d) =
   case closestIntersection ss ray of -- get closest intersection
@@ -37,15 +37,16 @@ trace depth scene@(Scene bg ambient airn ls ss) rn ray@(Ray o d) =
             beerk    = if nd>0 then absorbe|**|t else 1       -- Beer's law
             
             reflectk = fr |* beerk * ks
+            rd       = reflection d n
             reflectc = if   norm reflectk > 0.002
-                       then reflectk * trace (depth-1) scene rn (Ray pt $ reflection d n)
+                       then reflectk * trace (depth-1) scene rn (Ray (pt+0.0001|*rd) rd)
                        else black
                             
             nrat      = rn/n2
             transv    = nrat|*d - (signum nd) * (nrat*cosin - sqrt (1-sintrans2)) |* n
             transk    = (1-fr) |* beerk * ((idv 1) - ks) * kt
             transmitc = if norm transk > 0.002
-                        then transk * trace (depth-1) scene n2 (Ray pt transv)
+                        then transk * trace (depth-1) scene n2 (Ray (pt+0.0001|*transv) transv)
                         else black
 
              -- diffuse & specular; don't calculate if in surface
