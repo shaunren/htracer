@@ -9,5 +9,5 @@ Read htracer.hs. Modify as you please. Then
     make
 
 ## Sample
-Generated with msaa16. Took about 40 seconds on i7-3930k.
+Generated with msaa16. Took about 7 seconds on i7-3930k.
 ![sample image](https://github.com/shaunren/htracer/raw/master/render.png)

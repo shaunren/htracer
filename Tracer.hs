@@ -10,12 +10,15 @@ import Multisampler (Multisampler)
 -- render a scene
 render :: View -> Projection -> Multisampler -> Scene -> Width -> Height -> Int -> [Colour]
 render view projection ms scene@(Scene _ _ airn _ _) width height maxdepth =
-  parMap rdeepseq (combine . map projAndTrace . (ms vright vup)) viewPlane
+  map (combine . map projAndTrace . (ms vright vup)) viewPlane
+  `using` parListChunk chunkSize rdeepseq  -- chunk work so we don't overflow spark pool
   where
     (viewPlane,vright,vup) = makeViewPlane view width height
     projAndTrace           = trace maxdepth scene airn . projection view
     combine cs             = clamp $ 1/l |* sum cs
       where l = fromIntegral $ length cs
+    imageArea              = width * height
+    chunkSize              = max 512 . round . sqrt $ fromIntegral imageArea
 
 -- trace a single ray
 trace :: Int -> Scene -> Scalar -> Ray -> Colour
@@ -51,4 +54,3 @@ trace depth scene@(Scene bg ambient airn ls ss) rn ray@(Ray o d) =
 
              -- diffuse & specular; don't calculate if in surface
             lightc   = if nd>0 then black else sumColour $ ls <*> [ss] <*> [mat] <*> [negate d] <*> [pt] <*> [n]
-            

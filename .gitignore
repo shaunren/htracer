@@ -1,3 +1,4 @@
 *.hi
 htracer
 /render.ppm
+*.eventlog
