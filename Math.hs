@@ -69,9 +69,9 @@ distance v w = norm $ v-w
 
 -- normalize vector
 normalize :: Vec3 -> Vec3
-normalize v@(Vec3 x y z)
+normalize v
   | n < epsilon     = zerov
-  | otherwise       = Vec3 (x/n) (y/n) (z/n)
+  | otherwise       = vmap (/n) v
   where n = norm v
 
 -- Vec3 with identical entries
@@ -81,7 +81,19 @@ idv x = Vec3 x x x
 
 -- 3D ray
 data Ray = Ray { origin :: Vec3, direction :: Vec3 } deriving (Eq, Show)
-        
+
+type Velocity = Vec3
+type Time = Scalar
+-- lorentz boost a vector with velocity. Note c = 1, so |velocity| < 1.
+lorentzBoost :: Velocity -> Time -> Vec3 -> Vec3
+lorentzBoost velocity t r
+  | v >= 1    = error "Superluminal motion forbidden"
+  | v < 0.01  = r -- don't bother for v << c
+  | otherwise = r + (gamma - 1) * (r |.| n) |* n - gamma * t |* velocity
+  where v = norm velocity
+        n = vmap (/v) velocity
+        gamma = 1 / sqrt (1 - v^2)
+
 -- compute the smallest real root(s) to ax^2 + bx + c = 0
 roots2 :: Scalar -> Scalar -> Scalar -> [Scalar]
 roots2 a b c

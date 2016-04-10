@@ -17,7 +17,9 @@ view :: View
 view = View { cameraPos = Vec3 0 0 5
             , lookingAt = Vec3 0 0 0
             , upVector  = Vec3 0 1 0
-            , hFov      = 70 }
+            , hFov      = 70
+            , velocity  = Vec3 0 0 (-0.75) -- the velocity of the camera. |velocity| must be < 1 (speed of light).
+            }
 
 scene :: Scene
 scene = Scene { bgColour      = black
@@ -51,6 +53,19 @@ scene = Scene { bgColour      = black
                                          , diaelectric   = True
                                          , refractiveInd = 1.1
                                          , absorption    = Vec3 0.3 0.8 0.99 }))))
+                                -- this should be invisible classically. (back of camera)
+                                , (SW (S.Sphere (Vec3 0 0.5 6) 0.4
+                                       (constUVMap $
+                                        Material {
+                                          emission      = black
+                                        , ambientK      = green
+                                        , diffuseK      = green
+                                        , specularK     = idv 0.5
+                                        , shininess     = 20
+                                        , transmissionK = black
+                                        , diaelectric   = False
+                                        , refractiveInd = 1
+                                        , absorption    = black })))
                                 , (SW (P.Plane (Vec3 0 (-1.5) 0) (Vec3 0 1 0)
                                       (Material black (idv 0.8) (idv 0.8) white 15 0 False 1 black)))
                                 --, (SW (P.Plane (Vec3 0 0 (-20)) (Vec3 0 0 1)
@@ -69,7 +84,7 @@ height   = 768
 maxdepth = 16
 
 multisampler :: Multisampler
-multisampler = msaa8
+multisampler = msaa16
 
 main :: IO ()
 main = do

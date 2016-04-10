@@ -113,6 +113,10 @@ data View = View { cameraPos  :: Vec3
                  , lookingAt  :: Vec3
                  , upVector   :: Vec3
                  , hFov       :: Scalar -- horizontal FOV in degrees
+                 -- velocity of the camera.
+                 -- This is used for Lorentz boost, where c = 1.
+                 -- Note that the magnitude of velocity must be < c = 1.
+                 , velocity   :: Velocity
                  } deriving (Eq, Show)
 
 type Width = Int
@@ -120,7 +124,7 @@ type Height = Int
 
 -- evaluates to a list of points, vright, vup
 makeViewPlane :: View -> Width -> Height -> ([Point],Vec3,Vec3)
-makeViewPlane (View cpos lookat up hfov) w h =
+makeViewPlane (View cpos lookat up hfov _) w h =
   ([  lookat
    + ((0.5+(fromIntegral x)-hwidth)  |* vright)
    + ((0.5+(fromIntegral y)-hheight) |* vup)    | y <- [h-1,h-2..0], x <- [0..w-1] ]
@@ -136,12 +140,14 @@ makeViewPlane (View cpos lookat up hfov) w h =
         vup'    = normalize up
         vright  = unitd |* vdir |*| vup'
         vup     = unitd |* vup'
-        
 
 type Projection = View -> Point -> Ray
 -- predefined projections
 orthographicProjection :: Projection
-orthographicProjection (View cpos _ vdir _) p = Ray p $ normalize (vdir-cpos)
+orthographicProjection (View cpos _ vdir _ _) p = Ray p . normalize $ vdir - cpos
 
 perspectiveProjection :: Projection
-perspectiveProjection (View cpos _ _ _) p = Ray cpos $ normalize (p-cpos)
+perspectiveProjection (View cpos _ _ _ v) p = Ray cpos' . normalize $ p' - cpos'
+  where boost = lorentzBoost v
+        cpos' = boost 0 cpos
+        p'    = boost (norm (p - cpos)) p

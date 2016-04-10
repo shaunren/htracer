@@ -5,4 +5,4 @@ render.png:	render.ppm
 render.ppm:	htracer
 	./htracer +RTS -N12 > render.ppm
 htracer:	$(shell find . -type f -name '*.hs')
-	ghc -O2 -threaded -rtsopts -eventlog -o htracer htracer.hs
+	ghc -O2 -threaded -prof -fprof-auto  -o htracer htracer.hs
