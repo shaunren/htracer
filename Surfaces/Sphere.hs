@@ -3,7 +3,7 @@ module Surfaces.Sphere where
 
 import Math
 import Scene
-
+import qualified AABB as B
 
 -- Sphere
 data Sphere = Sphere { center      :: Point
@@ -25,3 +25,5 @@ instance Surface Sphere where
     where (Vec3 dx dy dz) = normalize (p-c)
           u = 0.5 + (atan2 dz dx)/(2*pi)
           v = 0.5 - (asin dy)/pi
+
+  getAABB (Sphere c r _) b = B.clip b $ B.AABB { B.minPoint = vmap (\x -> x - r) c, B.maxPoint = vmap (+r) c }

@@ -35,6 +35,19 @@ zerov = Vec3 0 0 0
 vmap :: (Scalar -> Scalar) -> Vec3 -> Vec3
 vmap f (Vec3 x y z) = Vec3 (f x) (f y) (f z)
 
+vzip :: Vec3 -> Vec3 -> [(Scalar, Scalar)]
+vzip (Vec3 x y z) (Vec3 x' y' z') = [(x,x'), (y,y'), (z,z')]
+
+liftV2 :: (Scalar -> Scalar -> Scalar) -> Vec3 -> Vec3 -> Vec3
+liftV2 f (Vec3 x y z) (Vec3 x' y' z') = Vec3 (f x x') (f y y') (f z z')
+
+allCoordsCompare :: (Scalar -> Scalar -> Bool) -> Vec3 -> Vec3 -> Bool
+allCoordsCompare f (Vec3 x y z) (Vec3 x' y' z') = x `f` x' && y `f` y' && z `f` z'
+
+allCoordsLE, allCoordsLT :: Vec3 -> Vec3 -> Bool
+allCoordsLE = allCoordsCompare (<=)
+allCoordsLT = allCoordsCompare (<)
+
 -- scalar product
 infixl 7 |*
 (|*) :: Scalar -> Vec3 -> Vec3
@@ -77,6 +90,10 @@ normalize v
 -- Vec3 with identical entries
 idv :: Scalar -> Vec3
 idv x = Vec3 x x x
+
+-- |Standard basis vectors
+basis :: [Vec3]
+basis = [Vec3 1 0 0, Vec3 0 1 0, Vec3 0 0 1]
 
 
 -- 3D ray
@@ -326,4 +343,3 @@ rotateMat angle axis =
   where (Vec3 x y z) = normalize axis
         s = sin angle
         c = cos angle
-  

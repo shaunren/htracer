@@ -4,6 +4,7 @@ module Scene where
 import Data.Word (Word8)
 import Math
 import Data.List (foldl',foldl1')
+import qualified AABB as B
 
 -- We use OpenGL coordinate system (X->right, Y^up, Zo out)
 
@@ -56,7 +57,9 @@ class Surface s where
   getNormal :: s -> Point -> Normal
   -- get material at point
   getMaterial :: s -> Point -> Material
-                        
+  -- Get bounding box within the region given
+  getAABB :: s -> B.AABB -> Maybe B.AABB
+
 -- ADT wrapping surface for heterogeneous surface list
 data SurfaceW = forall s. Surface s => SW s
 

@@ -1,4 +1,4 @@
-module Tracer where
+module Tracer (render, trace) where
 
 import Control.Applicative
 import Control.Parallel.Strategies
@@ -19,6 +19,12 @@ render view projection ms scene@(Scene _ _ airn _ _) width height maxdepth =
       where l = fromIntegral $ length cs
     imageArea              = width * height
     chunkSize              = max 512 . round . sqrt $ fromIntegral imageArea
+
+
+data TraceState = TraceState { scene :: Scene
+                             , refactiveIndex :: Scalar
+                             , depth :: Int
+                             }
 
 -- trace a single ray
 trace :: Int -> Scene -> Scalar -> Ray -> Colour
