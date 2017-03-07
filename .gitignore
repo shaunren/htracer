@@ -3,3 +3,4 @@ htracer
 *.ppm
 *.eventlog
 *.prof
+.stack-work/

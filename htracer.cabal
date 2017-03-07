@@ -1,0 +1,22 @@
+name:                htracer
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/shaunren/htracer
+license:             GPL3
+license-file:        LICENSE
+author:              Shaun Ren
+maintainer:          shaun.ren@linux.com
+copyright:           2015-2017 Shaun Ren
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable htracer
+  hs-source-dirs:      src
+  main-is:             htracer.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5
+                     , parallel >= 3.1 && < 3.3
+                     , deepseq >= 1.1 && < 1.5

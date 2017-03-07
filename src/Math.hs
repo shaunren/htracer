@@ -11,7 +11,8 @@ epsilon = 0.000001
 
 -----------------------------------------------------------------------------------------------------
 -- A 3D vector
-data Vec3 = Vec3 Scalar Scalar Scalar deriving (Eq)
+data Vec3 = Vec3 { vecX :: Scalar, vecY :: Scalar,  vecZ :: Scalar }
+          deriving (Eq)
 
 instance Show Vec3 where
   show (Vec3 x y z) = "(" ++ show x ++ "," ++ show y ++ "," ++ show z ++ ")"

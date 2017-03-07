@@ -23,3 +23,12 @@ clip (AABB { minPoint = minE, maxPoint = maxE }) (AABB { minPoint = minP, maxPoi
         [maxx', maxy', maxz'] = map (uncurry min) $ vzip maxE maxP
         minP' = Vec3 minx' miny' minz'
         maxP' = Vec3 maxx' maxy' maxz'
+
+size :: AABB -> Vec3
+size (AABB { minPoint = minP, maxPoint = maxP }) = maxP - minP
+
+volume :: AABB -> Scalar
+volume b      = let (Vec3 l w h) = size b in l*w*h
+
+surfaceArea :: AABB -> Scalar
+surfaceArea b = let (Vec3 l w h) = size b in 2 * (l*w + l*h + w*h)
