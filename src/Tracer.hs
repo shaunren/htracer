@@ -1,20 +1,24 @@
+{-# LANGUAGE TypeFamilies #-}
 module Tracer (render, trace) where
 
 import Control.Applicative
 import Control.Parallel.Strategies
+import System.Random (RandomGen)
+import Control.Monad.Random
 
 import Math
 import Scene
 import Multisampler (Multisampler)
 
 -- render a scene
-render :: View -> Projection -> Multisampler -> Scene -> Width -> Height -> Int -> [Colour]
-render view projection ms scene@(Scene _ _ airn _ _) width height maxdepth =
-  map (combine . map projAndTrace . (ms vright vup)) viewPlane
+render :: (RandomGen g) => View -> Projection g -> Multisampler -> Scene -> Width -> Height -> Int -> g -> [Colour]
+render view projection ms scene@(Scene _ _ airn _ _) width height maxdepth rng =
+  map (\(pt,g) -> combine (evalRand (traceMsFun pt) g)) (zip viewPlane (splitRandomGens rng (length viewPlane)))
   `using` parListChunk chunkSize rdeepseq  -- chunk work so we don't overflow spark pool
   where
     (viewPlane,vright,vup) = makeViewPlane view width height
-    projAndTrace           = trace maxdepth scene airn . projection view
+    projAndTrace pt        = projection view pt >>= return . trace maxdepth scene airn
+    traceMsFun               = mapM projAndTrace . ms vright vup
     combine cs             = clamp $ 1/l |* sum cs
       where l = fromIntegral $ length cs
     imageArea              = width * height
@@ -60,3 +64,7 @@ trace depth scene@(Scene bg ambient airn ls ss) rn ray@(Ray o d) =
 
              -- diffuse & specular; don't calculate if in surface
             lightc   = if nd>0 then black else sumColour $ ls <*> [ss] <*> [mat] <*> [negate d] <*> [pt] <*> [n]
+
+splitRandomGens :: (RandomGen g) => g -> Int -> [g]
+splitRandomGens g n =
+  (iterate (\(g':gs) -> let (ga,gb) = split g' in ga:gb:gs) [g]) !! (n-1)

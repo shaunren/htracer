@@ -5,6 +5,7 @@ import Surfaces.Plane as P
 import Lights
 import Multisampler
 import Math
+import System.Random (getStdGen)
 
 
 checkedMatUV :: Scalar -> UVMap
@@ -88,4 +89,5 @@ multisampler = msaa16
 
 main :: IO ()
 main = do
-  putStrLn . makePpm width height $ render view perspectiveProjection multisampler scene width height maxdepth
+  rng <- getStdGen
+  putStrLn . makePpm width height $ render view perspectiveProjection multisampler scene width height maxdepth rng

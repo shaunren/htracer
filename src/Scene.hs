@@ -2,6 +2,8 @@
 module Scene where
 
 import Data.Word (Word8)
+import System.Random (RandomGen)
+import Control.Monad.Random
 import Math
 import Data.List (foldl',foldl1')
 import qualified AABB as B
@@ -144,13 +146,13 @@ makeViewPlane (View cpos lookat up hfov _) w h =
         vright  = unitd |* vdir |*| vup'
         vup     = unitd |* vup'
 
-type Projection = View -> Point -> Ray
+type Projection g = View -> Point -> Rand g Ray
 -- predefined projections
-orthographicProjection :: Projection
-orthographicProjection (View cpos _ vdir _ _) p = Ray p . normalize $ vdir - cpos
+orthographicProjection :: (RandomGen g) => Projection g
+orthographicProjection (View cpos _ vdir _ _) p = return . Ray p . normalize $ vdir - cpos
 
-perspectiveProjection :: Projection
-perspectiveProjection (View cpos _ _ _ v) p = Ray cpos' . normalize $ p' - cpos'
+perspectiveProjection :: (RandomGen g) => Projection g
+perspectiveProjection (View cpos _ _ _ v) p = return . Ray cpos' . normalize $ p' - cpos'
   where boost = lorentzBoost v
         cpos' = boost 0 cpos
         p'    = boost (norm (p - cpos)) p
